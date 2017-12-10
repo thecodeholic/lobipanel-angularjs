@@ -4,21 +4,32 @@
     <meta charset="UTF-8">
     <title>Title</title>
 
-    <link rel="stylesheet"  href="../node_modules/bootstrap/dist/css/bootstrap.css">
-    <link rel="stylesheet"  href="../node_modules/lobipanel/dist/css/lobipanel.css">
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="../node_modules/lobipanel/dist/css/lobipanel.css">
+
+    <script src="../node_modules/jquery/dist/jquery.js"></script>
+    <script src="../node_modules/jquery-ui-dist/jquery-ui.js"></script>
+    <script src="../node_modules/lobipanel/dist/js/lobipanel.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
 
     <script src="../node_modules/angular/angular.js"></script>
     <script src="../src/lobipanel.module.js"></script>
     <script src="../src/lobipanel.directive.js"></script>
     <script src="../src/lobipanel.controller.js"></script>
+
     <script src="app.module.js"></script>
-    <script src="../node_modules/lobipanel/dist/js/lobipanel.js"></script>
 
 </head>
 <body ng-app="app" ng-controller="LobiPanelDemoController as vm">
 
-<lobipanel>
-    <button>lll</button>
+<lobipanel data-heading="{{vm.panelTitle}}" data-options="vm.options" data-events="vm.events">
+    <ul class="list-group">
+        <li class="list-group-item">Cras justo odio</li>
+        <li class="list-group-item">Dapibus ac facilisis in</li>
+        <li class="list-group-item">Morbi leo risus</li>
+        <li class="list-group-item">Porta ac consectetur ac</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+    </ul>
 </lobipanel>
 
 </body>

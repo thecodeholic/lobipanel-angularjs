@@ -11,7 +11,21 @@
 
   function LobiPanelDemoController($scope) {
     var vm = this;
-    vm.demoVar = "113";
-    console.log("1111111");
+    vm.panelTitle = "Lorem ipsum title";
+    vm.options = {
+      reload: false,
+      close: false,
+      editTitle: false
+    };
+
+    vm.events = {
+      init: function(){
+        console.log("initialized");
+      },
+      beforeUnpin: function(){
+        console.log("333333333333");
+      }
+    };
+
   }
 })();
