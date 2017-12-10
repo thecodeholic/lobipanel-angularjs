@@ -1,0 +1,12 @@
+{
+  "name": "angularjs-lobipanel",
+  "version": "1.0.0",
+  "main": "angularjs-lobipanel.js",
+  "description": "Angular wrapper for Lobipanel",
+  "license": "MIT",
+  "dependencies": {
+    "angular": "^1.6.7",
+    "bootstrap": "^3.3.7",
+    "lobipanel": "^1.0.0"
+  }
+}
