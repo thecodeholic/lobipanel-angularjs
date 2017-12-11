@@ -8,6 +8,7 @@
   "main": [
     "angularjs-lobipanel.js"
   ],
+  "repository": "https://github.com/arboshiki/angularjs-lobipanel.git",
   "license": "MIT",
   "homepage": "",
   "ignore": [
