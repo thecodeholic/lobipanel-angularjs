@@ -1,10 +1,13 @@
 {
-  "name": "angulatjs-lobipanel",
+  "name": "angularjs-lobipanel",
+  "version": "1.0.1",
   "authors": [
     "Zura Sekhniashvili <zurasekhniashvili@gmail.com>"
   ],
   "description": "AngularJs wrapper for Lobipanel",
-  "main": "angularjs-lobipanel.js",
+  "main": [
+    "angularjs-lobipanel.js"
+  ],
   "license": "MIT",
   "homepage": "",
   "ignore": [
@@ -13,5 +16,13 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "angular": "^1.6.7",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.2.1",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-dist": "^1.12.1",
+    "lobipanel": "^0.7.1"
+  }
 }
