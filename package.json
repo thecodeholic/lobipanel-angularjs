@@ -1,6 +1,6 @@
 {
   "name": "angularjs-lobipanel",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "main": "angularjs-lobipanel.js",
   "repository": "https://github.com/arboshiki/angularjs-lobipanel.git",
   "description": "Angular wrapper for Lobipanel",
