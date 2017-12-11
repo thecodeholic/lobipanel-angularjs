@@ -21,7 +21,7 @@
   "dependencies": {
     "angular": "^1.5.11",
     "bootstrap": "^3.3.7",
-    "jquery": "^3.2.1",
+    "jquery": "^2.0.0",
     "jquery-ui": "^1.12.1",
     "lobipanel": "^0.7.1"
   }
