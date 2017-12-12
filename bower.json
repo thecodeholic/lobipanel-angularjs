@@ -6,7 +6,8 @@
   ],
   "description": "AngularJs wrapper for Lobipanel",
   "main": [
-    "angularjs-lobipanel.js"
+    "lobipanel.js",
+    "lobipanel-angularjs.js"
   ],
   "repository": "https://github.com/arboshiki/angularjs-lobipanel.git",
   "license": "MIT",
