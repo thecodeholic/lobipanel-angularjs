@@ -13,13 +13,14 @@
       restrict: 'E',
       transclude: true,
       scope: {
+        style: '@style',
         heading: '@heading',
         options: '=',
         events: '='
       },
-      template: `<div class="panel panel-primary" >
+      template: `<div class="panel panel-primary" ng-class="[cls]">
               <div class="panel-heading">
-                  <h3 class="panel-title">{{heading}}</h3>
+                  <h3 class="panel-title">{{style}} - {{heading}}</h3>
               </div>
               <div class="panel-body" ng-transclude>
                   
@@ -27,8 +28,10 @@
           </div>
         `,
       link: function (scope, el, attrs) {
-        var $el = $(el);
-        var instance = $el.data('lobiPanel');
+        scope.style = (scope.style || 'primary');
+        scope.cls = 'panel-'+scope.style;
+        const $el = $(el);
+        const instance = $el.data('lobiPanel');
         if (scope.events && angular.isObject(scope.events)) {
           angular.forEach(scope.events, function (value, key) {
             if (!angular.isFunction(value)) {
