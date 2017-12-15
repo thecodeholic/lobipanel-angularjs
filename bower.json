@@ -1,6 +1,6 @@
 {
   "name": "lobipanel-angularjs",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "authors": [
     "Zura Sekhniashvili <zurasekhniashvili@gmail.com>"
   ],
@@ -24,6 +24,6 @@
     "bootstrap": "^3.3.7",
     "jquery": "^2.0.0",
     "jquery-ui": "^1.12.1",
-    "lobipanel": "^0.7.1"
+    "lobipanel": "^1.0.1"
   }
 }
