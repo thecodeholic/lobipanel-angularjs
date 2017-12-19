@@ -84,21 +84,30 @@ Number.prototype.isBetween = function (num1, num2, including) {
  * @returns {undefined}
  */
 $.fn.insertAt = function (i, selector) {
-    var object = selector;
+    var $object = selector;
     if (typeof selector === 'string') {
-        object = $(selector);
+        $object = $(selector);
     }
 
-    i = Math.min(object.children().length, i);
+    i = Math.min($object.children().length, i);
     if (i == 0) {
-        object.prepend(this);
+        $object.prepend(this);
         return this;
     }
     var oldIndex = this.data('index');
 
+    if (!i || isNaN(i)){
+        i = $object.children().length - 1;
+    }
     this.attr('data-index', i);
-    object.find(">*:nth-child(" + i + ")").after(this);
-    object.children().each(function (index, el) {
+
+    var $el = $object.children().eq(i - 1);
+    if ($el.length){
+        $el.after(this);
+    } else {
+        $object.append(this);
+    }
+    $object.children().each(function (index, el) {
         var $el = $(el);
         if (oldIndex < i && index > oldIndex && index <= i) {
             $el.attr('data-index', parseInt($el.data('data-index'), 10) - 1);
@@ -126,6 +135,38 @@ $.fn.enableSelection = function () {
 $(function () {
     var STORAGE_PREFIX = 'lobipanel_';
 
+    var StorageLocal = function(){
+        this.saveChildPositions = function(parentInnerId, positions){
+            if (positions !== undefined) {
+                localStorage.setItem(STORAGE_PREFIX + 'parent_' + parentInnerId, JSON.stringify(positions));
+            }
+        };
+
+        this.savePanelParams = function(innerId, storage){
+            localStorage.setItem(STORAGE_PREFIX + innerId, JSON.stringify(storage));
+        };
+
+        this.getAllPanelPositions = function(){
+            var parents = [];
+            for (var i in localStorage) {
+                if (i.indexOf(STORAGE_PREFIX + 'parent_') === 0) {
+                    var innerParentId = i.replace(STORAGE_PREFIX + 'parent_', '');
+                    var $parent = $('.lobipanel-parent-sortable[data-inner-id=' + innerParentId + ']');
+                    if ($parent.length) {
+                        parents[innerParentId] = JSON.parse(localStorage[i]);
+                    }
+                }
+            }
+            return parents;
+        };
+
+        this.getPanelStorage = function(innerId){
+            var item = localStorage.getItem(STORAGE_PREFIX + innerId);
+            return JSON.parse(item || null) || {};
+        };
+
+    };
+
     var LobiPanel = function ($el, options) {
         var me = this;
 
@@ -148,7 +189,7 @@ $(function () {
         me.$el.css('display', 'none');
         me._applyState(me.$options.state, me.$options.stateParams);
         me.$el.css('display', 'block');
-        me._applyIndex(me.$options.initialIndex);
+        // me._applyIndex(me.$options.initialIndex);
     };
 
     LobiPanel.prototype = {
@@ -160,8 +201,10 @@ $(function () {
 
 
             if (!me.hasRandomId) {
-                me.storage = localStorage.getItem(STORAGE_PREFIX + me.innerId);
-                me.storage = JSON.parse(me.storage) || {};
+                if (!this.storageObject){
+                    this.storageObject = new StorageLocal();
+                }
+                me.storage = this.storageObject.getPanelStorage(me.innerId);
             }
             var opts = me._getOptionsFromAttributes();
 //            window.console.log(opts);
@@ -193,6 +236,16 @@ $(function () {
             var maxWidth = 'calc(100% - ' + me.$heading.find('.dropdown-menu').children().length * me.$heading.find('.dropdown-menu li').first().outerWidth() + "px)";
             me.$heading.find('.panel-title').css('max-width', maxWidth);
 
+            if (me.getParam('panelTitle')) {
+                me.$heading.find('.panel-title').html(me.getParam('panelTitle'));
+            }
+
+            var style = me.getParam('panelStyle');
+            if (style) {
+                me.applyStyle(style.bg, style.text);
+            }
+
+            // me.savepanelPositions();
             me._triggerEvent("init");
         },
         /**
@@ -227,21 +280,36 @@ $(function () {
             //disable resize functionality
             me.disableResize();
             me.disableDrag();
-            me._enableSorting();
+
             //remove on panel click event (which brings the panel into front)
             me._offPanelClick();
             //remove panel-unpin class
             me.$el.removeClass('panel-unpin')
-                //save current position, z-index and size to use it for later unpin
+            //save current position, z-index and size to use it for later unpin
                 .attr('old-style', me.$el.attr('style'))
-                .removeAttr('style')
+                // .removeAttr('style')
                 .css('position', 'relative');
+
+            var toRemoveProperties = [
+                'position',
+                'z-index',
+                'left',
+                'top',
+                'width',
+                'height'
+            ];
+
+            for (var i in toRemoveProperties) {
+                me.$el.css(toRemoveProperties[i], '');
+            }
+
             me.$body.css({
                 width: '',
                 height: ''
             });
             me._setBodyHeight();
             me._insertInParent();
+            me._enableSorting();
             return me;
         },
 
@@ -505,6 +573,7 @@ $(function () {
             if (me.$el.hasClass("panel-collapsed")) {
                 return me;
             }
+            me.$el.attr('data-index', me.$el.index());
             me._changeClassOfControl(me.$heading.find('[data-func="expand"]'));
             me.$el.css('position', 'fixed');
             var res = me._getMaxZIndex();
@@ -585,6 +654,16 @@ $(function () {
             me._triggerEvent("beforeSmallSize");
             me._changeClassOfControl(me.$heading.find('[data-func="expand"]'));
             var css = me.$el.attr('old-style').getCss();
+
+            var toRemoveProperties = [
+                'position',
+                'z-index',
+                'left',
+                'top',
+                'width',
+                'height'
+            ];
+
             //we get css properties from old-style (saved before expanding)
             //and we animate panel to this css properties
             me.$el.animate({
@@ -601,7 +680,10 @@ $(function () {
                 //if panel is pinned we also remove its style attribute and we
                 //append panel in its parent element
                 if (!me.$el.hasClass('panel-unpin')) {
-                    me.$el.removeAttr('style');
+                    for (var i in toRemoveProperties) {
+                        me.$el.css(toRemoveProperties[i], '');
+                    }
+                    // me.$el.removeAttr('style');
                     me._insertInParent();
                     me._enableSorting();
                 } else {
@@ -620,8 +702,8 @@ $(function () {
                 } else if (me.$options.bodyHeight !== 'auto') {
                     bHeight = me.$options.bodyHeight;
                 }
-                if (me.$options.bodyHeight !== 'auto'){
-                    me._saveState('pinnned');
+                if ( me.isPinned()) {
+                    me._saveState('pinned');
                 } else {
                     me._updateUnpinnedState();
                 }
@@ -657,7 +739,7 @@ $(function () {
          */
         close: function (animationDuration) {
             var me = this,
-                animationDuration = animationDuration  === undefined ? 100 : animationDuration;
+                animationDuration = animationDuration === undefined ? 100 : animationDuration;
             me._triggerEvent('beforeClose');
             me.$el.hide(animationDuration, function () {
                 if (me.isOnFullScreen()) {
@@ -684,7 +766,7 @@ $(function () {
          */
         setPosition: function (left, top, animationDuration) {
             var me = this,
-                animationDuration = animationDuration  === undefined ? 100 : animationDuration;
+                animationDuration = animationDuration === undefined ? 100 : animationDuration;
 
             //this method works only if panel is not pinned
             if (me.isPinned()) {
@@ -706,7 +788,7 @@ $(function () {
          */
         setWidth: function (w, animationDuration) {
             var me = this,
-                animationDuration = animationDuration  === undefined ? 100 : animationDuration;
+                animationDuration = animationDuration === undefined ? 100 : animationDuration;
             if (me.isPinned()) {
                 return me;
             }
@@ -729,7 +811,7 @@ $(function () {
          */
         setHeight: function (h, animationDuration) {
             var me = this,
-                animationDuration = animationDuration  === undefined ? 100 : animationDuration;
+                animationDuration = animationDuration === undefined ? 100 : animationDuration;
             if (me.isPinned()) {
                 return me;
             }
@@ -753,7 +835,7 @@ $(function () {
          */
         setSize: function (w, h, animationDuration) {
             var me = this,
-                animationDuration = animationDuration  === undefined ? 100 : animationDuration;
+                animationDuration = animationDuration === undefined ? 100 : animationDuration;
             if (me.isPinned()) {
                 return me;
             }
@@ -1068,9 +1150,11 @@ $(function () {
         finishTitleEditing: function () {
             var me = this,
                 input = me.$heading.find('input');
-            if (me._triggerEvent('beforeTitleChange', input.val()) === false){
+            if (me._triggerEvent('beforeTitleChange', input.val()) === false) {
                 return me;
             }
+
+            me.saveParam('panelTitle', input.val());
             me.$heading.find('.panel-title').html(input.val());
             input.remove();
             me._changeClassOfControl(me.$heading.find('[data-func="editTitle"]'));
@@ -1113,9 +1197,9 @@ $(function () {
         disableTooltips: function () {
             var me = this;
             var $links = me.$heading.find('.dropdown-menu>li>a');
-            $links.each(function(ind, el){
+            $links.each(function (ind, el) {
                 var bsTooltip = $(el).data('bs.tooltip');
-                if (bsTooltip){
+                if (bsTooltip) {
                     $(el).tooltip('destroy');
                 }
             });
@@ -1141,6 +1225,9 @@ $(function () {
             }
             if (me.$options.expand !== false) {
                 menu.append(me._generateExpand());
+            }
+            if (me.$options.changeStyle !== false) {
+                menu.append(me._generateChangeStyle());
             }
             if (me.$options.close !== false) {
                 menu.append(me._generateClose());
@@ -1186,10 +1273,10 @@ $(function () {
             });
         },
 
-        hideTooltip: function($el){
+        hideTooltip: function ($el) {
             var bsTooltip = $el.data('bs.tooltip');
 
-            if (bsTooltip){
+            if (bsTooltip) {
                 $el.tooltip('hide');
             }
             return this;
@@ -1273,6 +1360,99 @@ $(function () {
             }
             me._attachExpandClickListener(control);
             return $('<li></li>').append(control);
+        },
+        _generateChangeStyle: function () {
+            var me = this;
+            var options = me.$options.changeStyle;
+            var $control = $('<a data-func="changeStyle"></a>');
+            $control.append('<i class="' + LobiPanel.PRIVATE_OPTIONS.iconClass + ' ' + options.icon + '"></i>');
+            if (options.tooltip && typeof options.tooltip === 'string') {
+                $control.append('<span class="control-title">' + options.tooltip + '</span>');
+                $control.attr('data-tooltip', options.tooltip);
+            }
+            // me._attachExpandClickListener(control);
+
+            var $dropdown = $('<li class="style-change-item"></li>').append($control);
+
+            var $menu = $('<div>', {
+                'class': 'style-list'
+            }).appendTo($dropdown);
+
+            if (me.$options.styles) {
+                for (var i = 0; i < me.$options.styles.length; i++) {
+                    var style = me.$options.styles[i];
+                    $menu.append('<div class="style-item style-primary" style="background-color: ' +
+                        style.bg + '" data-bg="' + style.bg + '" data-text="' + style.text + '"></div>');
+                }
+            }
+            $menu.find('.style-item').on('click', function () {
+                var $item = $(this);
+                me.saveParam('panelStyle', {
+                    bg: $item.data('bg'),
+                    text: $item.data('text')
+                });
+                me.applyStyle($item.data('bg'), $item.data('text'));
+                $menu.removeClass('opened');
+            });
+
+            $control.on('click', function () {
+                var $this = $(this);
+                var $parent = $this.closest('.style-change-item');
+                $parent.find('.style-list').toggleClass('opened');
+            });
+
+            return $dropdown;
+        },
+
+        applyStyle: function(color, text){
+            var me = this;
+            me.$heading.css('background-color', color);
+            me.$heading.css('border-color', color);
+            me.$heading.css('color', text);
+            me.$el.css('border-color', color);
+        },
+
+        _createDropdownForStyleChange: function () {
+            var me = this;
+            var $dropdown = $('<div>', {
+                'class': 'dropdown'
+            }).append(
+                $('<button>', {
+                    'type': 'button',
+                    'data-toggle': 'dropdown',
+                    'class': 'btn btn-default btn-xs',
+                    'html': '<i class="glyphicon glyphicon-th"></i>'
+                })
+            );
+            var $menu = $('<div>', {
+                'class': 'dropdown-menu dropdown-menu-right'
+            }).appendTo($dropdown);
+
+            for (var i = 0; i < 0; i++) {
+                var st = me.$globalOptions.listStyles[i];
+                var st = 'primary';
+                $('<div class="' + st + '"></div>')
+                    .on('mousedown', function (ev) {
+                        ev.stopPropagation()
+                    })
+                    .click(function () {
+                        var classes = me.$el[0].className.split(' ');
+                        var oldClass = null;
+                        for (var i = 0; i < classes.length; i++) {
+                            if (me.$globalOptions.listStyles.indexOf(classes[i]) > -1) {
+                                oldClass = classes[i];
+                            }
+                        }
+                        me.$el.removeClass(me.$globalOptions.listStyles.join(" "))
+                            .addClass(this.className);
+
+                        me._triggerEvent('styleChange', [me, oldClass, this.className]);
+
+                    })
+                    .appendTo($menu);
+            }
+
+            return $dropdown;
         },
         _attachExpandClickListener: function (control) {
             var me = this;
@@ -1489,14 +1669,38 @@ $(function () {
                 opacity: 0.7,
                 revert: 300,
                 update: function (event, ui) {
-                    var innerId = ui.item.data('inner-id');
+                    me.savepanelPositions();
+                    var $panel = ui.item;
+
+                    var innerId = $panel.data('inner-id');
                     me._removeInnerIdFromParent(innerId);
                     me._appendInnerIdToParent(ui.item.parent(), innerId);
-                    me._updateDataIndices(ui.item);
                     me._triggerEvent('dragged');
                 }
             });
         },
+
+        savepanelPositions: function () {
+            var me = this;
+            var $parents = $('.lobipanel-parent-sortable');
+            $parents.each(function (index, parent) {
+                var $parent = $(parent);
+
+                var parentInnerId = $parent.data('inner-id');
+                if (!parentInnerId) {
+                    console.error("Panel does not have parent id ", $parent);
+                    return;
+                }
+                var $childPanels = $parent.find('.lobipanel');
+                var positions = {};
+                $childPanels.each(function (index, el) {
+                    var $el = $(el);
+                    positions[$el.data('inner-id')] = index;
+                });
+                me.storageObject.saveChildPositions(parentInnerId, positions);
+            });
+        },
+
         _disableSorting: function () {
             var me = this;
             var parent = me.$el.parent();
@@ -1504,25 +1708,13 @@ $(function () {
                 parent.sortable("destroy");
             }
         },
-        _updateDataIndices: function (panel) {
-            var me = this;
-            var items = panel.parent().children();
-            items.each(function (index, el) {
-                $(el).attr('data-index', index);
-                var lobiPanel = $(el).data('lobiPanel');
-                if (lobiPanel && lobiPanel.$options.stateful && !lobiPanel.hasRandomId){
-                    lobiPanel._saveState('pinned', {index: index});
-                }
-            });
-            // me._saveState('pinned', {index: panel.index()})
-            console.log("Save indices in localstorage");
-
-        },
         _removeInnerIdFromParent: function (innerId) {
             var me = this;
             var parent = $('[' + LobiPanel.PRIVATE_OPTIONS.parentAttr + '~=' + innerId + ']');
-            var innerIds = parent.attr(LobiPanel.PRIVATE_OPTIONS.parentAttr).replace(innerId, '').trim().replace(/\s{2,}/g, ' ');
-            parent.attr(LobiPanel.PRIVATE_OPTIONS.parentAttr, innerIds);
+            if (parent.length) {
+                var innerIds = parent.attr(LobiPanel.PRIVATE_OPTIONS.parentAttr).replace(innerId, '').trim().replace(/\s{2,}/g, ' ');
+                parent.attr(LobiPanel.PRIVATE_OPTIONS.parentAttr, innerIds);
+            }
         },
         _onToggleIconsBtnClick: function () {
             var me = this;
@@ -1578,26 +1770,54 @@ $(function () {
         },
         _saveState: function (state, params) {
             var me = this;
-            console.log("Save state ", state, params);
+            // console.log("Save state ", state, params);
             if (!me.hasRandomId && me.$options.stateful) {
                 me.storage.state = state;
                 if (params) {
                     me.storage.stateParams = params;
                 }
+
                 me._saveLocalStorage(me.storage);
             }
         },
+        getParam: function (key, value) {
+            var me = this;
+            // console.log("Save state ", state, params);
+            return me.storage[key];
+        },
+        saveParam: function (key, value) {
+            var me = this;
+            // console.log("Save state ", state, params);
+            me.storage[key] = value;
+
+            me._saveLocalStorage(me.storage);
+        },
         _saveLocalStorage: function (storage) {
             var me = this;
-            localStorage.setItem(STORAGE_PREFIX + me.innerId, JSON.stringify(storage));
+            me.storageObject.savePanelParams(me.innerId, storage);
         },
         _applyState: function (state, params) {
             var me = this;
             switch (state) {
                 case 'pinned':
-                    if (params && params.index !== null && params.index !== undefined) {
-                        me._applyIndex(params.index);
+                    var allPanelPositions = me.storageObject.getAllPanelPositions();
+                    // console.log(allPanelPositions);
+                    for (var i in allPanelPositions) {
+                        var panelPositions = allPanelPositions[i];
+                        var innerParentId = i;
+                        var $parent = $('.lobipanel-parent-sortable[data-inner-id=' + innerParentId + ']');
+                        for (var j in panelPositions) {
+                            var $panel = $('[data-inner-id=' + j + ']');
+                            me._removeInnerIdFromParent($panel.data('inner-id'));
+                            me._appendInnerIdToParent($parent, $panel.data('inner-id'));
+                            if (!$panel.hasClass('panel-unpin') && !$panel.hasClass('panel-expanded')) {
+                                $panel.insertAt(panelPositions[j], $parent);
+                            }
+                        }
                     }
+                    // if (params && params.index !== null && params.index !== undefined) {
+                    //     me._applyIndex(params.index);
+                    // }
                     break;
                 case 'unpinned':
                     me.unpin();
@@ -1630,31 +1850,31 @@ $(function () {
             args.unshift(me);
 
             me.$el.trigger(eventType + '.lobiPanel', args);
-            if (me.$options[eventType] && typeof me.$options[eventType] === 'function'){
+            if (me.$options[eventType] && typeof me.$options[eventType] === 'function') {
                 return me.$options[eventType].apply(me, args);
             }
 
             return true;
         },
-        doPin: function(){
+        doPin: function () {
             var me = this;
-            if (me._triggerEvent("beforePin") !== false){
+            if (me._triggerEvent("beforePin") !== false) {
                 me.pin();
                 me._saveState('pinned');
                 me._triggerEvent("onPin");
             }
             return me;
         },
-        doUnpin: function(){
+        doUnpin: function () {
             var me = this;
-            if (me._triggerEvent('beforeUnpin') !== false){
+            if (me._triggerEvent('beforeUnpin') !== false) {
                 me.unpin();
                 me._updateUnpinnedState();
                 me._triggerEvent('onUnpin');
             }
             return me;
         },
-        doTogglePin: function(){
+        doTogglePin: function () {
             var me = this;
             if (this.isPinned()) {
                 this.doUnpin();
@@ -1663,11 +1883,11 @@ $(function () {
             }
             return me;
         },
-        _updateUnpinnedState: function(){
+        _updateUnpinnedState: function () {
             var me = this;
             me._saveState('unpinned', me.getAlignment());
         },
-        getAlignment: function(){
+        getAlignment: function () {
             var me = this;
             return {
                 top: me.$el.css('top'),
@@ -1762,6 +1982,10 @@ $(function () {
             icon2: 'glyphicon glyphicon-resize-small', //icon2 is shown when pane is on full screen state
             tooltip: 'Fullscreen'       //tooltip text, If you want to disable tooltip, set it to false
         },
+        changeStyle: {
+            icon: 'glyphicon glyphicon-th', //icon is shown when panel is not on full screen
+            tooltip: 'Style'       //tooltip text, If you want to disable tooltip, set it to false
+        },
         close: {
             icon: 'glyphicon glyphicon-remove', //You can user glyphicons if you do not want to use font-awesome
             tooltip: 'Close'            //tooltip text, If you want to disable tooltip, set it to false
@@ -1771,9 +1995,33 @@ $(function () {
             icon2: 'glyphicon glyphicon-floppy-disk',
             tooltip: 'Edit title'
         },
-
-
-
+        styles: [
+            {
+                bg: '#d9534f',
+                text: '#FFF'
+            },
+            {
+                bg: '#f0ad4e',
+                text: '#FFF'
+            },
+            {
+                bg: '#337ab7',
+                text: '#FFF'
+            },
+            {
+                bg: '#5bc0de',
+                text: '#FFF'
+            },
+            {
+                bg: '#4753e4',
+                text: '#FFF'
+            },
+            {
+                bg: '#9e4aea',
+                text: '#FFF'
+            }
+        ],
+        storageObject: null,
 
         // Events
         /**
@@ -1785,5 +2033,27 @@ $(function () {
     };
 
     $('.lobipanel').lobiPanel();
+
+    var $parent = $('.lobipanel-parent-sortable');
+    if (!$parent.hasClass('ui-sortable')) {
+        $parent.sortable({
+            connectWith: '.lobipanel-parent-sortable',
+            items: '.lobipanel-sortable',
+            handle: '.panel-heading',
+            cursor: 'move',
+            placeholder: 'lobipanel-placeholder',
+            forcePlaceholderSize: true,
+            opacity: 0.7,
+            revert: 300,
+            update: function (event, ui) {
+                console.log(ui);
+                // me.savepanelPositions();
+                //
+                // // me._removeInnerIdFromParent(innerId);
+                // // me._appendInnerIdToParent(ui.item.parent(), innerId);
+                // me._triggerEvent('dragged');
+            }
+        });
+    }
 });
 
