@@ -23,8 +23,8 @@
 <body style="padding: 25px" ng-app="app" ng-controller="LobiPanelDemoController as vm">
 
 <div class="row">
-    <div class="col-sm-6">
-        <lobipanel data-heading="Panel title 1">
+    <div class="col-sm-6" data-inner-id="lobipanel-parent1">
+        <lobipanel data-heading="Panel title 1" data-inner-id="statefull-panel1" data-style="default" data-options="vm.options">
             <ul class="list-group">
                 <li class="list-group-item">Cras justo odio</li>
                 <li class="list-group-item">Dapibus ac facilisis in</li>
@@ -33,7 +33,7 @@
                 <li class="list-group-item">Vestibulum at eros</li>
             </ul>
         </lobipanel>
-        <lobipanel data-heading="Panel title 2">
+        <lobipanel data-heading="Panel title 2" data-inner-id="statefull-panel2" data-options="vm.options">
             <ul class="list-group">
                 <li class="list-group-item">Cras justo odio</li>
                 <li class="list-group-item">Dapibus ac facilisis in</li>
@@ -42,27 +42,18 @@
                 <li class="list-group-item">Vestibulum at eros</li>
             </ul>
         </lobipanel>
-        <lobipanel data-heading="Panel title 3">
-            <ul class="list-group">
-                <li class="list-group-item">Cras justo odio</li>
-                <li class="list-group-item">Dapibus ac facilisis in</li>
-                <li class="list-group-item">Morbi leo risus</li>
-                <li class="list-group-item">Porta ac consectetur ac</li>
-                <li class="list-group-item">Vestibulum at eros</li>
-            </ul>
-        </lobipanel>
-        <lobipanel data-heading="Panel title 4">
-            <ul class="list-group">
-                <li class="list-group-item">Cras justo odio</li>
-                <li class="list-group-item">Dapibus ac facilisis in</li>
-                <li class="list-group-item">Morbi leo risus</li>
-                <li class="list-group-item">Porta ac consectetur ac</li>
-                <li class="list-group-item">Vestibulum at eros</li>
-            </ul>
-        </lobipanel>
+        <!--<lobipanel data-heading="Panel title 3" data-inner-id="statefull-panel3" data-style="info" data-options="vm.options">-->
+            <!--<ul class="list-group">-->
+                <!--<li class="list-group-item">Cras justo odio</li>-->
+                <!--<li class="list-group-item">Dapibus ac facilisis in</li>-->
+                <!--<li class="list-group-item">Morbi leo risus</li>-->
+                <!--<li class="list-group-item">Porta ac consectetur ac</li>-->
+                <!--<li class="list-group-item">Vestibulum at eros</li>-->
+            <!--</ul>-->
+        <!--</lobipanel>-->
     </div>
-    <div class="col-sm-6">
-        <lobipanel data-heading="Panel title 5">
+    <div class="col-sm-6" data-inner-id="lobipanel-parent2">
+        <lobipanel data-heading="Panel title 5" data-inner-id="statefull-panel4" data-style="danger" data-options="vm.options">
             <ul class="list-group">
                 <li class="list-group-item">Cras justo odio</li>
                 <li class="list-group-item">Dapibus ac facilisis in</li>
@@ -71,7 +62,7 @@
                 <li class="list-group-item">Vestibulum at eros</li>
             </ul>
         </lobipanel>
-        <lobipanel data-heading="Panel title 6">
+        <lobipanel data-heading="Panel title 6" data-inner-id="statefull-panel5" data-style="success" data-options="vm.options">
             <ul class="list-group">
                 <li class="list-group-item">Cras justo odio</li>
                 <li class="list-group-item">Dapibus ac facilisis in</li>
@@ -80,24 +71,15 @@
                 <li class="list-group-item">Vestibulum at eros</li>
             </ul>
         </lobipanel>
-        <lobipanel data-heading="Panel title 7">
-            <ul class="list-group">
-                <li class="list-group-item">Cras justo odio</li>
-                <li class="list-group-item">Dapibus ac facilisis in</li>
-                <li class="list-group-item">Morbi leo risus</li>
-                <li class="list-group-item">Porta ac consectetur ac</li>
-                <li class="list-group-item">Vestibulum at eros</li>
-            </ul>
-        </lobipanel>
-        <lobipanel data-heading="Panel title 8">
-            <ul class="list-group">
-                <li class="list-group-item">Cras justo odio</li>
-                <li class="list-group-item">Dapibus ac facilisis in</li>
-                <li class="list-group-item">Morbi leo risus</li>
-                <li class="list-group-item">Porta ac consectetur ac</li>
-                <li class="list-group-item">Vestibulum at eros</li>
-            </ul>
-        </lobipanel>
+        <!--<lobipanel data-heading="Panel title 7" data-inner-id="statefull-panel6" data-options="vm.options">-->
+            <!--<ul class="list-group">-->
+                <!--<li class="list-group-item">Cras justo odio</li>-->
+                <!--<li class="list-group-item">Dapibus ac facilisis in</li>-->
+                <!--<li class="list-group-item">Morbi leo risus</li>-->
+                <!--<li class="list-group-item">Porta ac consectetur ac</li>-->
+                <!--<li class="list-group-item">Vestibulum at eros</li>-->
+            <!--</ul>-->
+        <!--</lobipanel>-->
     </div>
 </div>
 

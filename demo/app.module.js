@@ -13,9 +13,8 @@
     var vm = this;
     vm.panelTitle = "Lorem ipsum title";
     vm.options = {
-      reload: false,
-      close: false,
-      editTitle: false
+      stateful: true,
+      sortable: true
     };
 
     vm.events = {

@@ -5,12 +5,14 @@
   'use strict';
 
   angular.module('lobipanel')
-    .directive('lobipanel', lobipanel);
+    .directive('lobipanel', lobipanel)
+    .directive('lobipanelParent', lobipanelParent)
+  ;
 
   function lobipanel() {
     return {
       replace: true,
-      restrict: 'E',
+      restrict: 'AE',
       transclude: true,
       scope: {
         style: '@style',
@@ -18,7 +20,7 @@
         options: '=',
         events: '='
       },
-      template: `<div class="panel panel-primary" ng-class="[cls]">
+      template: `<div class="panel" ng-class="[cls]">
               <div class="panel-heading">
                   <h3 class="panel-title">{{style}} - {{heading}}</h3>
               </div>
@@ -46,4 +48,14 @@
     }
   }
 
+  function lobipanelParent(){
+    return {
+      restrict: 'A',
+      transclude: true,
+      scope: {},
+      link: function (scope, el, attrs) {
+          $(el).lobiPanelParent()
+      }
+    }
+  }
 })();
