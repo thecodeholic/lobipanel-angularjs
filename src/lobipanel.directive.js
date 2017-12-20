@@ -5,11 +5,11 @@
   'use strict';
 
   angular.module('lobipanel')
-    .directive('lobipanel', lobipanel)
-    .directive('lobipanelParent', lobipanelParent)
+    .directive('lobipanel', ['$timeout', lobipanel])
+    .directive('lobipanelParent', ['$timeout', lobipanelParent])
   ;
 
-  function lobipanel() {
+  function lobipanel($timeout) {
     return {
       replace: true,
       restrict: 'AE',
@@ -43,7 +43,9 @@
             $el.on(key + '.lobiPanel', value);
           });
         }
-        $el.lobiPanel(scope.options);
+        $timeout(function(){
+          $el.lobiPanel(scope.options);
+        },0);
       }
     }
   }

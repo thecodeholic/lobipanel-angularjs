@@ -28,9 +28,9 @@
 (function () {
   'use strict';
 
-  angular.module('lobipanel').directive('lobipanel', lobipanel);
+  angular.module('lobipanel').directive('lobipanel', ['$timeout', lobipanel]);
 
-  function lobipanel() {
+  function lobipanel($timeout) {
     return {
       replace: true,
       restrict: 'E',
@@ -41,7 +41,7 @@
         options: '=',
         events: '='
       },
-      template: '<div class="panel" ng-class="[cls]">\n              <div class="panel-heading">\n                  <h3 class="panel-title">{{style}} - {{heading}}</h3>\n              </div>\n              <div class="panel-body" ng-transclude>\n                  \n              </div>\n          </div>\n        ',
+      template: '<div class="panel panel-primary" ng-class="[cls]">\n              <div class="panel-heading">\n                  <h3 class="panel-title">{{style}} - {{heading}}</h3>\n              </div>\n              <div class="panel-body" ng-transclude>\n                  \n              </div>\n          </div>\n        ',
       link: function link(scope, el, attrs) {
         scope.style = scope.style || 'primary';
         scope.cls = 'panel-' + scope.style;
@@ -56,7 +56,9 @@
             $el.on(key + '.lobiPanel', value);
           });
         }
-        $el.lobiPanel(scope.options);
+        $timeout(function () {
+          $el.lobiPanel(scope.options);
+        }, 0);
       }
     };
   }
