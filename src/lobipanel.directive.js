@@ -53,7 +53,6 @@
   function lobipanelParent(){
     return {
       restrict: 'A',
-      transclude: true,
       scope: {},
       link: function (scope, el, attrs) {
           $(el).lobiPanelParent()
