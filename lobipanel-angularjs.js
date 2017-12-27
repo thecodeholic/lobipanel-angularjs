@@ -16,18 +16,6 @@
 (function () {
   'use strict';
 
-  angular.module('lobipanel').controller('LobiPanelController', LobiPanelController);
-
-  function LobiPanelController() {}
-})();
-'use strict';
-
-/**
- * Created by zura on 12/10/2017.
- */
-(function () {
-  'use strict';
-
   angular.module('lobipanel').directive('lobipanel', ['$timeout', lobipanel]).directive('lobipanelParent', ['$timeout', lobipanelParent]);
 
   function lobipanel($timeout) {
@@ -47,6 +35,14 @@
         scope.cls = 'panel-' + scope.style;
         var $el = $(el);
         var instance = $el.data('lobiPanel');
+
+        var events = ['init.lobiPanel', 'beforeUnpin.lobiPanel', 'onUnpin.lobiPanel', 'beforeClose.lobiPanel', 'onClose.lobiPanel', 'beforeToFront.lobiPanel', 'onToFront.lobiPanel', 'beforePin.lobiPanel', 'onPin.lobiPanel', 'beforeMinimize.lobiPanel', 'onMinimize.lobiPanel', 'beforeMaximize.lobiPanel', 'onMaximize.lobiPanel', 'beforeFullScreen.lobiPanel', 'onFullScreen.lobiPanel', 'beforeSmallSize.lobiPanel', 'onSmallSize.lobiPanel', 'beforeLoad.lobiPanel', 'startLoading.lobiPanel', 'loaded.lobiPanel', 'resizeStart.lobiPanel', 'onResize.lobiPanel', 'resizeStop.lobiPanel', 'dragged.lobiPanel'];
+        angular.forEach(events, function (event) {
+          $el.on(event, function () {
+            scope.$apply();
+          });
+        });
+
         if (scope.events && angular.isObject(scope.events)) {
           angular.forEach(scope.events, function (value, key) {
             if (!angular.isFunction(value)) {
