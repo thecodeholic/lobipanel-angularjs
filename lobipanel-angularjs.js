@@ -20,7 +20,7 @@
 
     function lobipanel($timeout, $compile) {
         return {
-            // replace: true,
+            replace: true,
             restrict: 'AE',
             transclude: true,
             scope: {
@@ -58,8 +58,7 @@
                     scope.options = scope.options || {};
                     scope.options.forAngularJs = true;
                     $el.lobiPanel(scope.options);
-                    console.log(el);
-                    $compile(el)(scope);
+                    $compile(el.find('.panel-heading'))(scope);
                 }, 0);
             }
         };
