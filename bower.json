@@ -24,6 +24,6 @@
     "bootstrap": "^3.3.7",
     "jquery": "^2.0.0",
     "jquery-ui": "^1.12.1",
-    "lobipanel": "^1.0.1"
+    "lobipanel": "master"
   }
 }
